@@ -1,3 +1,11 @@
+/*
+Modified: [Chad Samuelson] <chadrs2@byu.edu>
+Date: [09-2024]
+Description: Added in functionality for handling a OS0 or OS1 
+  128-beam ouster lidar. Change ring from uint8_t to uint16_t 
+  for the 'ring' variable.
+*/
+
 // #include <ros/ros.h>
 #include <rclcpp/rclcpp.hpp>
 #include <pcl_conversions/pcl_conversions.h>
@@ -16,8 +24,9 @@ enum LID_TYPE
   AVIA = 1,
   VELO16,
   OUST64,
+  OUST128,
   MID360
-};  //{1, 2, 3}
+};  //{1: Livox, 2: Velodyne, 3: Oust64, 4: Oust128}
 enum TIME_UNIT
 {
   SEC = 0,
@@ -85,7 +94,18 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_ros::Point,
 
 namespace ouster_ros
 {
-struct EIGEN_ALIGN16 Point
+struct EIGEN_ALIGN16 Point128
+{
+  PCL_ADD_POINT4D;
+  float intensity;
+  uint32_t t;
+  uint16_t reflectivity;
+  uint16_t ring;
+  uint16_t ambient;
+  uint32_t range;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+struct EIGEN_ALIGN16 Point64
 {
   PCL_ADD_POINT4D;
   float intensity;
@@ -99,7 +119,19 @@ struct EIGEN_ALIGN16 Point
 }  // namespace ouster_ros
 
 // clang-format off
-POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point,
+POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point128,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    // use std::uint32_t to avoid conflicting with pcl::uint32_t
+    (std::uint32_t, t, t)
+    (std::uint16_t, reflectivity, reflectivity)
+    (std::uint16_t, ring, ring)
+    (std::uint16_t, ambient, ambient)
+    (std::uint32_t, range, range)
+)
+POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point64,
     (float, x, x)
     (float, y, y)
     (float, z, z)
