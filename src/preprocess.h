@@ -1,9 +1,9 @@
 /*
 Modified: [Chad Samuelson] <chadrs2@byu.edu>
-Date: [09-2024]
+Date: [09-2024, 10-2024]
 Description: Added in functionality for handling a OS0 or OS1 
   128-beam ouster lidar. Change ring from uint8_t to uint16_t 
-  for the 'ring' variable.
+  for the 'ring' variable. Added in functionality for Semantic Point Clouds
 */
 
 // #include <ros/ros.h>
@@ -25,8 +25,9 @@ enum LID_TYPE
   VELO16,
   OUST64,
   OUST128,
+  SEMOUST128,
   MID360
-};  //{1: Livox, 2: Velodyne, 3: Oust64, 4: Oust128}
+};  //{1: Livox, 2: Velodyne, 3: Oust64, 4: Oust128, 5: SemOust128}
 enum TIME_UNIT
 {
   SEC = 0,
@@ -94,6 +95,19 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_ros::Point,
 
 namespace ouster_ros
 {
+struct EIGEN_ALIGN16 SemanticPoint128
+{
+  PCL_ADD_POINT4D;
+  float intensity;
+  uint32_t t;
+  uint16_t reflectivity;
+  uint16_t ring;
+  uint16_t ambient;
+  uint32_t range;
+  uint16_t segment_id;
+  uint16_t scan_idx;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
 struct EIGEN_ALIGN16 Point128
 {
   PCL_ADD_POINT4D;
@@ -119,6 +133,20 @@ struct EIGEN_ALIGN16 Point64
 }  // namespace ouster_ros
 
 // clang-format off
+POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::SemanticPoint128,
+    (float, x, x)
+    (float, y, y)
+    (float, z, z)
+    (float, intensity, intensity)
+    // use std::uint32_t to avoid conflicting with pcl::uint32_t
+    (std::uint32_t, t, t)
+    (std::uint16_t, reflectivity, reflectivity)
+    (std::uint16_t, ring, ring)
+    (std::uint16_t, ambient, ambient)
+    (std::uint32_t, range, range)
+    (std::uint16_t, segment_id, segment_id)
+    (std::uint16_t, scan_idx, scan_idx)
+)
 POINT_CLOUD_REGISTER_POINT_STRUCT(ouster_ros::Point128,
     (float, x, x)
     (float, y, y)
@@ -190,6 +218,7 @@ private:
   void avia_handler(const livox_ros_driver2::msg::CustomMsg::UniquePtr &msg);
   void oust64_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);
   void oust128_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);
+  void semantic_oust128_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);
   void velodyne_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);
   void mid360_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);
   void default_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &msg);

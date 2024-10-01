@@ -14,14 +14,15 @@
         map_file_path: "./test.pcd"
 
         common:
-            lid_topic:  "/ouster/points"
+            lid_topic:  "/semantic_pointcloud" #"/ouster/points"
             imu_topic:  "/ouster/imu"
             time_sync_en: false         # ONLY turn on when external time synchronization is really not possible
             time_offset_lidar_to_imu: 0.0 # Time offset between lidar and IMU calibrated by other algorithms, e.g. LI-Init (can be found in README).
                                         # This param will take effect no matter what time_sync_en is. So if the time offset is not known exactly, please set as 0.0
             
         preprocess:
-            lidar_type: 4                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 3 for 64 ouster LiDAR, 4 for 128 ouster LiDAR, 5 for 128 semantic ouster LiDAR 
+            lidar_type: 5                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 3 for 64 ouster LiDAR, 
+                                         # 4 for 128 ouster LiDAR, 5 for 128 semantic ouster LiDAR, 6 for mid 360 LiDAR 
             scan_line: 128
             timestamp_unit: 3                 # 0-second, 1-milisecond, 2-microsecond, 3-nanosecond.
             blind: 4.0
